@@ -1,0 +1,16 @@
+# Byte-compiled files
+__pycache__/
+*.pyc
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Log and temporary files
+*.log
+*.tmp
+__tmp__

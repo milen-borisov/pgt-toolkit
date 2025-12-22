@@ -1,0 +1,159 @@
+# ---------------------------------------------------------
+# LOGGING SETTINGS
+# ---------------------------------------------------------
+
+### Logging ###
+logging: 
+  log_name: PGT-Toolkit # Log name for identifying log messages.
+  log_file: logs/PGT_Toolkit.log # Path to the log file.
+  level: INFO # Logging level (e.g., DEBUG, INFO, WARNING, ERROR, CRITICAL).
+
+
+
+# ---------------------------------------------------------
+# TARGETS SETTINGS
+# ---------------------------------------------------------
+targets:
+  # --- User settings ---
+  export_to_csv_sort_targets_by_id_on: True # Enable/Disable the sort of the targets by ID
+  export_to_csv_decimal_places: 2 # The number of digits after the decimal point in target data (center_x, center_y, size)
+
+
+
+
+# ---------------------------------------------------------
+# HRCT (HUMAN READABLE CODED TARGETS) SETTINGS
+# ---------------------------------------------------------
+
+### HRCT Drawer ###
+hrct_drawer:
+  # --- User settings ---
+  # Color: [red, green, blue, white, black]
+  target_center_lines_color: green
+  target_id_text_color: red
+
+
+
+### HRCT Decoder ###
+hrct_decoder:
+  # --- User settings ---
+  # Target Center: Threshold for circularity.
+  target_center_circularity_threshold: 0.45 # value in range [0, 1], where 1 means perfect circle.
+  
+  # Target Center: area and length boundaries
+  target_center_contour_min_area: 314 # The minimum target center contour area in pixels**2. Approximal for a circle with 20 pixels diameter. 
+  target_center_contour_min_length: 63 # The minimum target center contour length in pixels. Approximal for a circle with 20 pixels diameter.
+  target_center_contour_max_area_ratio: 0.01 # The maximum area ratio between the target center contour area and the whole image area. Value between 0 and 1.
+  target_center_contour_max_perimeter_ratio: 0.1 # The maximum perimeter ratio between the target center contour perimeter and the whole image perimeter. Value between 0 and 1
+  
+  # Undecoded targets
+  undecoded_targets_return_on: True # Enable/Disable the return of found undecoded targets; i.e. on/off their exportation in CSV file
+  undecoded_targets_unique_name_on: True # Enable/Disable the unique name of the found undecoded targets. 
+
+  # --- Internal settings (change them carefully) ---
+  target_scaled_image_size: 240 # in pixels; the square side size of the scaled target image during decoding process 
+  target_center_numb_sample_points: 36 # The number of points sampled around the target center's circumference for CCT classification.
+  
+  decoding_scalded_dm9_image_size: 120 # in pixels; the square side size of the scaled 9-dots target image during decoding process
+  decoding_target_id_morph_close_kernel_size: 3 # The kernel size of the morphological close operation of the 9-dots digit image
+  decoding_rotation_angle_clip_tolerance: 0.95 # The clip tolerance of the image that is used for finding the rotation angle of the target center. Use value between 0.8 and 1.0.
+  decoding_digit_black_ratio_threshold_tolerance: 0.3 # The threshold tolerance of the ration between the black and white pixels in one coding dot square. Use value between 0.0 and 0.4.
+  
+  decoding_target_id_x_char: 'x' # The symbol that is used for un-decoded 9-dots digit image
+  decoding_target_id_use_zero_on: True # Enable/Disable a zero in the decoded target ID; i.e. enable 01, 02, ..., 10, 20, ... 90 to be valid target IDs
+
+  finding_contours_use_hierarchy_on: False # Enable/Disable the contour hierarchy in the finding target center process
+
+  # --- Target geometry settings (change them carefully) ---
+  # Note: next settings are in some length unit; e.g. cm (, but not for the ratio)
+  target_square_size: 24.0 # The size of the whole target square side 
+  target_center_radius_out: 6.92 # The outer radius of the target center
+  target_center_radius_in: 5.72 # The inner radius of the target center; i.e. = r_out - d_thickness = 3 - 0.45
+
+  dm9_gap_size: 0.9 # The gap size/length between two dots and also the gap size between the image edge and the dots.
+  dm9_dot_shape_size: 1.2 # The dot diameter (or square side) size
+  dm9_outer_margin_extra: 0.1 # The extra outer margin of the digit matrix. Note. There is always a such outer margin with size 'gap/2'
+ 
+  dm9_dot_shape_type: dot # The shape of the dot: 'dot' (circle) or 'square' (filled rectangle).
+
+
+### HRCT Generator ###
+hrct_generator:
+  # --- Target geometry settings (change them carefully) ---
+  # Note: next settings are in length unit
+  length_unit: cm # The length unit of the next properties
+  target_square_size: 24.0 # The size of the whole target square side 
+  target_center_radius_out: 6.92 # The outer radius of the target center
+  target_center_radius_in: 5.72 # The inner radius of the target center; i.e. = r_out - d_thickness = 3 - 0.45
+  
+  dm9_gap_size: 0.9 # The gap size/length between two dots and also the gap size between the image edge and the dots.
+  dm9_dot_shape_size: 1.2 # The dot diameter (or square side) size
+  dm9_outer_margin_extra: 0.1 # The extra outer margin of the digit matrix. Note. There is always a such outer margin with size 'gap/2'
+ 
+  dm9_dot_shape_type: dot # The shape of the dot: 'dot' (circle) or 'square' (filled rectangle).
+  target_boundary_thickness: 0.025 # The thickness of the image boundary line (in the length unit). If it is '0' the boundary line is not drawn.
+  
+  # --- Target ID text settings (change them carefully) --
+  draw_target_id_on: True # Enable/Disable the drawing of target ID at the bottom of the image.
+  draw_target_id_font_scale: 1 # The scale ratio of the target ID font size. The value in the range (0, 10]
+  draw_target_id_margin_out: 1.0 # The outer margin offset from the bottom of the target ID text (in the length unit; e.g. cm)
+
+
+
+
+# ---------------------------------------------------------
+# CCT (CIRCULAR CODED TARGETS) SETTINGS
+# ---------------------------------------------------------
+
+### CCT Drawer ###
+cct_drawer:
+  # --- User settings ---
+  # Color: [red, green, blue, white, black]
+  target_center_lines_color: green
+  target_id_text_color: red
+
+
+### CCT Decoder ###
+cct_decoder:
+  # --- User settings ---
+  # Target Center: Threshold for circularity.
+  target_center_circularity_threshold: 0.8 # Threshold for target center circularity. Value between 0 and 1, where 1 means perfect circle.
+  
+  # Target Center: area and length boundaries
+  target_center_contour_min_area: 314 # Minimum area in pixels**2 for target center contour to be considered valid. Approximal for a circle with 20 pixels diameter. 
+  target_center_contour_min_length: 63 # Minimum length in pixels for target center contour to be considered valid. Approximal for a circle with 20 pixels diameter.
+  target_center_contour_max_area_ratio: 0.01 # The maximum area ratio between the target center contour area and the whole image area. Value between 0 and 1.
+  target_center_contour_max_perimeter_ratio: 0.1 # The maximum perimeter ratio between the target center contour perimeter and the whole image perimeter. Value between 0 and 1.
+
+  # --- Internal settings (change them carefully) ---
+  target_scaled_image_size: 180.0 # The size of the square side of the scaled target image 
+  target_center_numb_sample_points: 36 # The number of points sampled around the target center's circumference for CCT classification.
+  
+  finding_contours_use_hierarchy_on: False # CCT target ignore it, therefore use only False
+
+  # --- Target geometry settings (change them carefully) --
+  # Note: next settings are in some length unit; e.g. cm
+  target_center_ring_radius_out: 1.0 # The outer radius of the target center
+  target_middle_ring_radius_out: 2.0 # The outer radius of the middle area that divides the target center and the coding ring 
+  target_outer_ring_radius_out: 3.0 # The outer radius of the coding ring
+  target_square_size: 8.0 # The size of the whole target square side
+
+
+### CCT Generator ###
+cct_generator: 
+  # --- Target geometry settings (change them carefully) --
+  # Note: next settings are in some length unit; 
+  length_unit: cm # The length unit of the next properties
+  target_center_ring_radius_out: 1.0 # The outer radius of the target center
+  target_middle_ring_radius_out: 2.0 # The outer radius of the middle area that divides the target center and the coding ring 
+  target_outer_ring_radius_out: 3.0 # The outer radius of the coding ring
+  target_square_size: 8.0 # The size of the whole target square side
+
+  target_boundary_thickness: 0.025 # The thickness of the image boundary line (in the length unit). If it is '0' the boundary line is not drawn.
+  
+  generate_central_point_on: True # Draw the inner central point in the target center
+
+  # --- Target ID text settings (change them carefully) --
+  draw_target_id_on: True # Enable/Disable the drawing of target ID at the bottom of the image.
+  draw_target_id_font_scale: 1 # The scale ratio of the target ID font size. The value in the range (0, 10]
+  draw_target_id_margin_out: 0.2 # The outer margin offset from the bottom of the target ID text (in the length unit; e.g. cm)
