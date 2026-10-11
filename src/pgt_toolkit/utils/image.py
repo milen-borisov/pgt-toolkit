@@ -77,6 +77,7 @@ class ImageUtils:
             if ImageUtils.file_is_image(file_path)
         ]
 
+        image_paths_to_process.sort()
         return image_paths_to_process
 
     @staticmethod
