@@ -20,10 +20,9 @@ parent_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(parent_dir))
 from app.settings import settings
 from app.logger import logger as log
-from utils.image import ImageUtils, Image, ImageBinary
+from utils.image import ImageUtils, Image, ImageBinary, ImageMeta
 from utils.image import ImageUtils as TEST
 from utils.math import MathUtils, Ellipse
-from utils.bit import BitUtils
 from typing import Optional, List
 from targets.target_data import TargetData, TargetDataUtils
 from targets.target_type import TargetTypeUtils
@@ -43,7 +42,7 @@ class BTDecoder(ABC):
         # Initialize with empty image data
         self._clear_input_data()
 
-    def _init_input_data(self, target_type: str, image: Image, image_file_name: str):
+    def _init_input_data(self, target_type: str, image: Image, image_meta: ImageMeta):
         # Target type
         self.target_type = target_type
         self.target_type_name, self.target_code_number, self.target_color = (
@@ -53,7 +52,7 @@ class BTDecoder(ABC):
         # Image
         h, w = ImageUtils.get_image_dimensions(image)
         self._image = image  # remember the input image
-        self._image_file_name = image_file_name
+        self._image_meta = image_meta
         self.image_area = h * w
         self.image_perimeter = 2 * (h + w)
         log.info("Image dimensions: %d x %d pixels (HxW)", h, w)
@@ -64,7 +63,7 @@ class BTDecoder(ABC):
             del self._dbg_image
 
         # image file name
-        self._image_file_name = ""
+        self._image_meta = None
 
         # Reset numerical state variables using standard assignment (removed ': int' hints)
         self.image_area = 0
@@ -97,7 +96,7 @@ class BTDecoder(ABC):
         self,
         target_type: str,
         image: Image,
-        image_file_name: str,
+        image_meta: ImageMeta,
         threshold_modes: Optional[List[str]],
         threshold_values: Optional[List[int]],
     ) -> List[TargetData]:
@@ -107,7 +106,7 @@ class BTDecoder(ABC):
         Args:
             target_type: A string with the target type.
             image: The input OpenCV image (numpy.ndarray) containing targets.
-            image_file_name: The file name of the image (used for exporting to CSV).
+            image_meta: The meta data of the image (used for exporting to CSV).
             threshold_modes: The threshold modes (used for detecting contours). One of ["adaptive", "otsu", "max"]
             threshold_values: The threshold values (used for detecting contours).
         Returns:
@@ -119,7 +118,7 @@ class BTDecoder(ABC):
             self._load_settings()
 
             # Initialize image data
-            self._init_input_data(target_type, image, image_file_name)
+            self._init_input_data(target_type, image, image_meta)
 
             # Find targets (using 'adaptive', 'otsu' or 'max' threshold modes)
             found_targets = []

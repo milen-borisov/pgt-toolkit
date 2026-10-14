@@ -702,7 +702,7 @@ class HRCTDecoder(BTDecoder):
 
         # Create TargetData object for returning
         target_data = TargetData(
-            self._image_file_name,
+            self._image_meta,
             self.target_type,
             target_id,
             target_id_raw,

@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 parent_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(parent_dir))
 from targets.target_data import TargetData
+from utils.image import Image
 
 
 # --------------------------------------------
@@ -21,7 +22,7 @@ from targets.target_data import TargetData
 # --------------------------------------------
 class BTDrawer(ABC):
     @staticmethod
-    def draw_target(target: TargetData, image: np.ndarray) -> np.ndarray:
+    def draw_target(target: TargetData, image: Image) -> Image:
         """
         Abstract method that must be implemented by all subclasses.
         This is the entry point for the main logic for drawing and

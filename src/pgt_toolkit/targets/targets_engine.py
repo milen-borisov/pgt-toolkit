@@ -28,7 +28,7 @@ from targets.target_data import TargetData
 from targets.target_type import TargetTypeUtils
 from targets.cct import CCTDecoder, CCTDrawer, CCTGenerator
 from targets.hrct import HRCTDecoder, HRCTDrawer, HRCTGenerator
-from utils.image import ImageUtils, Image
+from utils.image import ImageUtils, Image, ImageMeta
 from app.logger import logger as log
 from app.settings import settings
 
@@ -42,8 +42,8 @@ class PGTEngine:
     @staticmethod
     def find_targets_in_image(
         target_type: str,
-        image: np.ndarray,
-        image_file_name: str,
+        image: Image,
+        image_meta: ImageMeta,
         threshold_modes: Optional[
             List[str]
         ],  # Accepts None or ['adaptive', 'otsu', 'max']
@@ -62,7 +62,7 @@ class PGTEngine:
         Args:
             target_type (str): The type of target to look for (e.g., 'CCT', 'HRCT').
             image (Image): The image array (OpenCV format) to process.
-            image_file_name (str): The name of the file being processed.
+            image_meta (Image): The meta data of the image being processed.
             threshold_modes (Optional[List[str]]): List of thresholding techniques to try.
             threshold_values (Optional[List[int]]): List of fixed threshold values to try.
             undecoded_targets_unique_index_ref (List[int]): A list used as a mutable
@@ -88,7 +88,7 @@ class PGTEngine:
 
         # Find targets in the image
         found_targets = decoder.find_targets(
-            target_type, image, image_file_name, threshold_modes, threshold_values
+            target_type, image, image_meta, threshold_modes, threshold_values
         )
 
         # Process the found undecoded targets
@@ -195,7 +195,7 @@ class PGTEngine:
             float_format_spec = f".{float_decimal_places}f"
             for target in targets:
                 row_data = [
-                    target.image_file_name,
+                    target.image_meta.file_name,
                     target.type,
                     target.id,
                     format(target.center_pt_x, float_format_spec),
@@ -210,6 +210,7 @@ class PGTEngine:
                     target.geometry_type,
                     target.geometry_data,
                 ]
+
                 csv_writer.writerow(row_data)
 
     @staticmethod
@@ -236,15 +237,25 @@ class PGTEngine:
                 csv_writer.writerow(["ImageFileName", "Target_ID", "X_px", "Y_px"])
 
             # Write targets data
+            apply_exif_orientation = settings.get("targets.export_to_csv_metashape_apply_exif_orientation")
             float_decimal_places = settings.get("targets.export_to_csv_decimal_places")
             float_format_spec = f".{float_decimal_places}f"
             for target in targets:
+                # Get target center point coordinates (EXIF-orientated or NOT)
+                if apply_exif_orientation:
+                    target_center_pt_x, target_center_pt_y = target.get_orientated_center_pt()
+                else:
+                    target_center_pt_x, target_center_pt_y = target.center_pt_x, target.center_pt_y
+
+                # Get row_data
                 row_data = [
                     target.get_image_name(),
                     target.id,
-                    format(target.center_pt_x, float_format_spec),
-                    format(target.center_pt_y, float_format_spec),
+                    format(target_center_pt_x, float_format_spec),
+                    format(target_center_pt_y, float_format_spec),
                 ]
+
+                # Write row_data
                 csv_writer.writerow(row_data)
 
     @staticmethod
@@ -273,11 +284,12 @@ class PGTEngine:
                 row_data = [
                     format(target.center_pt_x, float_format_spec),
                     format(target.center_pt_y, float_format_spec),
-                    target.image_file_name,
+                    target.image_meta.file_name,
                     target.id,
                     format(target.size, float_format_spec),
                 ]
                 csv_writer.writerow(row_data)
+                
 
     # --- Generate printable targets image (PNG, JPG, SVG, PDF, etc.) ---
     @staticmethod

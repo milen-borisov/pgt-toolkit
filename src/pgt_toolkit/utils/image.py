@@ -1,4 +1,5 @@
 # Import external modules
+import os
 import cv2
 import math
 import cairosvg
@@ -11,6 +12,7 @@ from typing import Optional, Union, Tuple, List
 from utils.color import ColorUtils
 from utils.math import MathUtils
 from utils.line import LineUtils, LineSegmentArray
+from PIL import Image as PIL_Image
 
 # Predefine types
 ColorInput = Union[str, Tuple[int, int, int]]
@@ -19,7 +21,34 @@ Image = np.ndarray
 ImageBinary = np.ndarray
 
 
+# --------------------------------------------
+# Image Meta Class
+# --------------------------------------------
+class ImageMeta:
+    """
+    Lightweight container for image file metadata (path, dimensions, EXIF orientation).
+    Safe to persist in target memory since it does not hold heavy pixel arrays.
+    """
+    def __init__(
+        self,
+        image_path: str,
+        width: int = 0,
+        height: int = 0,
+        orientation: int = 1,
+    ):
+        self.path: str = image_path
+        self.file_name: str = os.path.basename(image_path)
+        self.stem: str = os.path.splitext(self.file_name)[0]
+        self.width: int = width
+        self.height: int = height
+        self.orientation: int = orientation
 
+    def __repr__(self) -> str:
+        return (
+            f"ImageMeta(file='{self.file_name}', "
+            f"dims={self.width}x{self.height}, ori={self.orientation})"
+        )
+    
 
 # --------------------------------------------
 # Image Utilities Functions
@@ -81,33 +110,73 @@ class ImageUtils:
         return image_paths_to_process
 
     @staticmethod
-    def load_image(image_path: str) -> Image:
+    def read_image_meta(image_path: str) -> ImageMeta:
         """
-        Loads an image from the specified path using OpenCV (cv2).
+        Reads image metadata (dimensions and EXIF orientation) 
+        without loading heavy pixel data into memory.
+        """
+        width, height = 0, 0
+        orientation = 1
 
-        This function reads the image file and checks if the loading was successful.
-        If the image cannot be found or loaded (e.g., due to a bad path or corrupted
-        file), it raises a FileNotFoundError.
+        try:
+            with PIL_Image.open(image_path) as img:
+                width, height = img.size
+
+                # 1. Check primary EXIF tag
+                exif = img.getexif()
+                if exif:
+                    orientation = exif.get(274, 1)
+
+                    # 2. Check ExifIFD sub-tag if main tag is default
+                    if orientation == 1 and hasattr(exif, "getifd"):
+                        exif_ifd = exif.getifd(0x8769)
+                        orientation = exif_ifd.get(274, 1)
+
+                # 3. Fallback for legacy RAW/Sony/Nikon EXIF structures
+                if orientation == 1 and hasattr(img, "_getexif"):
+                    raw_exif = img._getexif()
+                    if raw_exif:
+                        orientation = raw_exif.get(274, 1)
+
+        except Exception:
+            pass  # Fallback to defaults if metadata reading fails
+
+        return ImageMeta(
+            image_path=image_path,
+            width=width,
+            height=height,
+            orientation=orientation,
+        )
+    
+    @staticmethod
+    def load_image(image_path: str) -> Tuple[Image, ImageMeta]:
+        """
+        Loads the image pixel array via OpenCV and reads its ImageDataMeta structure.
 
         Args:
-            image_path (str): The full path to the image file.
+            image_path (str): Full path to the image file.
 
         Returns:
-            np.ndarray: The image data as a NumPy array (the standard OpenCV format).
+            Tuple[np.ndarray, ImageDataMeta]: Loaded BGR pixel array and associated metadata object.
 
         Raises:
-            FileNotFoundError: If cv2.imread is unable to load the image.
+            FileNotFoundError: If the image file cannot be read.
         """
-        # cv2.imread returns None if the image cannot be loaded.
-        image: Optional[np.ndarray] = cv2.imread(image_path)
+        # 1. Read lightweight metadata
+        image_meta = ImageUtils.read_image_meta(image_path)
 
+        # 2. Fast C++ OpenCV pixel loading
+        image: Optional[Image] = cv2.imread(image_path)
         if image is None:
-            # Raise an informative error if the image failed to load
             raise FileNotFoundError(
-                f"Unable to load image at {image_path}. Check if the file exists and is a valid image format."
+                f"Unable to load image at {image_path}. File may be missing or corrupt."
             )
 
-        return image
+        # 3. Always sync dimensions directly with OpenCV pixel array (Height, Width)
+        # OpenCV shape[0] is Height, shape[1] is Width
+        image_meta.height, image_meta.width = image.shape[:2]
+
+        return image, image_meta
 
     @staticmethod
     def save_image(image_path: str, image: Image):

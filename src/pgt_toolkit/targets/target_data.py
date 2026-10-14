@@ -16,6 +16,7 @@ from typing import Tuple, List
 
 # Import internal modules
 from targets.target_type import TargetTypeUtils
+from utils.image import ImageMeta
 
 
 # --------------------------------------------
@@ -25,7 +26,7 @@ class TargetData:
     # --- Class initialization functions ---
     def __init__(
         self,
-        image_file_name: str,
+        image_meta: ImageMeta,
         target_type: str,
         target_id: int | str | None,
         target_id_raw: str | None,
@@ -37,8 +38,8 @@ class TargetData:
         id_threshold_value: float | None = None,
         id_threshold_is_alternative: bool = None,
     ):
-        # Image file name, where the target is located
-        self.image_file_name = image_file_name
+        # Store metadata extracted from ImageData
+        self.image_meta = image_meta
 
         # Type of the target; e.g. "cct_8-bit_white", "hrct_4-dots_white", ...
         self.type = target_type
@@ -81,6 +82,37 @@ class TargetData:
         self.id_threshold_is_alternatives = [id_threshold_is_alternative]
 
     # --- Get methods ---
+    def get_orientated_center_pt(self) -> tuple[float, float]:
+        """
+        Transforms detected coordinates on rotated preview (OpenCV top-left 0,0)
+        to Metashape physical sensor orientation (bottom-left 0,0).
+        """
+        x_alg, y_alg = self.center_pt_x, self.center_pt_y
+
+        if not self.image_meta or self.image_meta.orientation == 1 or not self.image_meta.orientation:
+            return x_alg, y_alg
+
+        h_canvas = self.image_meta.height  # 6000 px for portrait
+        ori = self.image_meta.orientation
+
+        # Orientation 8 (90 deg CCW): 
+        # X_meta = H_canvas - Y_alg
+        # Y_meta = X_alg
+        if ori == 8:
+            return h_canvas - y_alg, x_alg
+
+        # Orientation 6 (90 deg CW):
+        elif ori == 6:
+            w_canvas = self.image_meta.width
+            return y_alg, w_canvas - x_alg
+
+        # Orientation 3 (180 deg):
+        elif ori == 3:
+            w_canvas = self.image_meta.width
+            return w_canvas - x_alg, h_canvas - y_alg
+
+        return x_alg, y_alg
+    
     def get_image_name(self) -> str:
         """
         Extracts and returns the base image name without the file extension.
@@ -91,7 +123,7 @@ class TargetData:
             str: The image stem (name) without the extension.
         """
         # Uses os.path.splitext to safely split the file name into name and extension
-        image_stem, _ = os.path.splitext(self.image_file_name)
+        image_stem, _ = os.path.splitext(self.image_meta.file_name)
         return image_stem
 
     def _get_id(self, id: int | str | None) -> int | str | None:
@@ -149,7 +181,7 @@ class TargetData:
     def __repr__(self):
         """String representation for easy debugging."""
         return (
-            f"Target: Image={self.image_file_name}, "
+            f"Target: Image={self.image_meta.file_name}, "
             f"Type={self.type}, "
             f"ID={self.id}, " 
             f"ID_raw={self.id_raw}, "
@@ -166,7 +198,7 @@ class TargetData:
     def short_repr(self):
         """Short string representation for easy debugging."""
         return (
-            f"{self.image_file_name}, {self.type}, "
+            f"{self.image_meta.file_name}, {self.type}, "
             f"ID={self.id}, Center=({self.center_pt_x:.1f}, {self.center_pt_y:.1f}), "
             f"Size={self.size:.2f}"
         )

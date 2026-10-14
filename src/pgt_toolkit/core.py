@@ -64,6 +64,7 @@ def run_find_targets(
     # Start logging for the entire process
     log.info_start(f"Find Targets")
 
+
     # --- Setup and Validation ---
 
     # Convert string path to Path object for validation
@@ -94,6 +95,7 @@ def run_find_targets(
     # This list holds a single integer that is passed by reference across function calls
     undecoded_targets_unique_index_ref = [1]
 
+
     # --- Image Iteration and Detection ---
 
     for ii, image_path in enumerate(image_paths_to_process):
@@ -106,15 +108,14 @@ def run_find_targets(
             f"Finding targets in image '{image_path.name}' ({ii+1}/{total_image_count})"
         )
 
-        # Load the image using the utility function
-        image = ImageUtils.load_image(image_path)
-        image_file_name = os.path.basename(image_path)
+        # Load the image pixel array and its lightweight meta object
+        image, image_meta = ImageUtils.load_image(str(image_path))
 
         # Perform the actual target detection
         curr_found_targets = PGTEngine.find_targets_in_image(
             target_type,
             image,
-            image_file_name,
+            image_meta,
             threshold_modes,
             threshold_values,
             undecoded_targets_unique_index_ref,
@@ -122,7 +123,7 @@ def run_find_targets(
 
         log.info_separator_h2()
         log.info(
-            f"Found {len(curr_found_targets)} targets in image '{image_file_name}'."
+            f"Found {len(curr_found_targets)} targets in image '{image_meta.file_name}'."
         )
 
         # Add the targets found in the current image to the master list
@@ -140,11 +141,12 @@ def run_find_targets(
             os.makedirs(res_image_folder_path, exist_ok=True)
 
             # Construct the full output path and save the image
-            res_image_path = os.path.join(res_image_folder_path, image_file_name)
+            res_image_path = os.path.join(res_image_folder_path, image_meta.file_name)
             log.info(
                 f"The found targets are drawn and saved in image '{res_image_path}'."
             )
             ImageUtils.save_image(res_image_path, res_image)
+
 
     # --- Result Export (CSV) ---
 
@@ -174,6 +176,7 @@ def run_find_targets(
                 found_targets, metashape_path
             )  #:SETTING:
             log.info(f"'{os.path.basename(metashape_path)}' is also exported.")
+
 
     # --- Finalization ---
 

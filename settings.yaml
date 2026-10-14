@@ -17,7 +17,7 @@ targets:
   # --- User settings ---
   export_to_csv_sort_targets_by_id_on: True # Enable/Disable the sort of the targets by ID
   export_to_csv_decimal_places: 2 # The number of digits after the decimal point in target data (center_x, center_y, size)
-
+  export_to_csv_metashape_apply_exif_orientation: True # Decide whether to apply EXIF transformation on the targets-center coordinates (only for metashape)
 
 
 
