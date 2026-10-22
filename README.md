@@ -259,15 +259,16 @@ If you utilize PGT-Toolkit in academic work or projects, please cite both the so
 
 **1. Software Citation:**
 
-Please use one of the following formats to cite the PGT-Toolkit software:
+**APA:** Borisov, M., & PGT Team. (2026). PGT-Toolkit: Photogrammetry Target Toolkit (Version 1.1.0) [Computer software]. GitHub. https://github.com/milen-borisov/pgt-toolkit.git
 
-**APA:** Borisov, M., & PGT Team. (2025). PGT-Toolkit: Photogrammetry Target Toolkit (Version 1.0.0) [Computer software]. GitHub. https://github.com/milen-borisov/pgt-toolkit.git
+**MLA:** Borisov, M., and PGT Team. PGT-Toolkit: Photogrammetry Target Toolkit. Version 1.1.0, GitHub, 2026, https://github.com/milen-borisov/pgt-toolkit.git.
 
-**MLA:** Borisov, M., and PGT Team. PGT-Toolkit: Photogrammetry Target Toolkit. Version 1.0.0, GitHub, 2025, https://github.com/milen-borisov/pgt-toolkit.git.
 
 **2. Related Article Citation:**
-The full technical details and validation of the HRCT design are included in a manuscript currently under review for peer-reviewed publication. For formal citation information or access to the draft, please contact the PGT team directly.
 
+**APA:** Raykovska, M., Borisov, M., Harizanov, S., Pashova, L., Petkov, N., Jones, K., ... & Lirkov, I. (2026). Experimental Validation of Human-Readable Coded Targets for Cross-Platform Photogrammetry and 3D Laser Scanning. The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences, 49, 253-260.
+
+**MLA:** Raykovska, Miglena, et al. "Experimental Validation of Human-Readable Coded Targets for Cross-Platform Photogrammetry and 3D Laser Scanning." The International Archives of the Photogrammetry, Remote Sensing and Spatial Information Sciences 49 (2026): 253-260.
 
 
 ## Funding and Acknowledgments 💡
